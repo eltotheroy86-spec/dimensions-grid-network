@@ -1,0 +1,123 @@
+name: Auto Build Dimensions Grid
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-grid:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dimensions Grid Browser app
+        run: |
+          mkdir -p src/app
+          mkdir -p src/app/grid/overlay
+          mkdir -p src/app/api/hooks
+          mkdir -p src/components
+          mkdir -p public/logo
+
+          # Create main app files
+          cat > package.json << 'EOF'
+          {
+            "name": "dimensions-grid",
+            "version": "1.0.0",
+            "private": true,
+            "scripts": {
+              "dev": "next dev",
+              "build": "next build",
+              "start": "next start"
+            },
+            "dependencies": {
+              "next": "latest",
+              "react": "latest",
+              "react-dom": "latest"
+            }
+          }
+          EOF
+
+          cat > next.config.js << 'EOF'
+          /** @type {import('next').NextConfig} */
+          const nextConfig = {}
+          module.exports = nextConfig
+          EOF
+
+          cat > vercel.json << 'EOF'
+          {
+            "version": 3,
+            "routes": [
+              { "src": "/api/(.*)", "dest": "/api/$1" }
+            ]
+          }
+          EOF
+
+          # Create pages
+          cat > src/app/page.tsx << 'EOF'
+          export default function Home() {
+            return (
+              <main style={{ padding: 40 }}>
+                <h1>Dimensions Grid Network</h1>
+                <p>Your device is now running through the Dimensions overlay browser.</p>
+                <a href="/grid/overlay">Open Grid Browser →</a>
+              </main>
+            );
+          }
+          EOF
+
+          cat > src/app/grid/overlay/page.tsx << 'EOF'
+          "use client";
+          export default function GridOverlay() {
+            return (
+              <main style={{ padding: 40, backdropFilter: "blur(10px)" }}>
+                <h2>Dimensions Grid Browser</h2>
+                <p>This is the live overlay demo.</p>
+              </main>
+            );
+          }
+          EOF
+
+          # Zapier hook
+          cat > src/app/api/hooks/zapier.ts << 'EOF'
+          import { NextResponse } from "next/server";
+          export async function POST(req: Request) {
+            const body = await req.json();
+            console.log("Zapier event received:", body);
+            return NextResponse.json({ ok: true, received: body });
+          }
+          EOF
+
+          # Basic components
+          cat > src/components/GridBackground.tsx << 'EOF'
+          export default function GridBackground({ children }) {
+            return (
+              <div style={{
+                background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)",
+                minHeight: "100vh",
+                padding: 20
+              }}>
+                {children}
+              </div>
+            );
+          }
+          EOF
+
+          # Commit all files
+          git config user.name "auto-grid"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Auto-installed Dimensions Grid Browser app" || echo "No changes to commit"
+          
+      - name: Build app
+        run: |
+          npm install
+          npm run build
