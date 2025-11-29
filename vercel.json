@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/hooks/zapier",
+      "dest": "/api/hooks/zapier"
+    }
+  ]
+}
