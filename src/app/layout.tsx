@@ -1,8 +1,8 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Dimensions Grid Network',
-  description: 'A demo app for the Dimensions Grid Network'
+  title: 'Dimensional Grid',
+  description: 'A REVOLUTIONARY Global Network Provider with Wallet, Rewards and Apps.'
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
